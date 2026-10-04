@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100%;
+}
+
+body {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.custom-map-marker-container {
+  background: transparent !important;
+  border: none !important;
+}
