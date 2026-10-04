@@ -2,6 +2,7 @@ import requests
 
 from django.conf import settings
 
+_reverse_geocode_cache = {}
 
 def get_location_name(coordinates):
 
@@ -13,6 +14,14 @@ def get_location_name(coordinates):
 
     longitude = coordinates[0]
     latitude = coordinates[1]
+
+    cache_key = (
+        round(longitude, 5),
+        round(latitude, 5),
+    )
+
+    if cache_key in _reverse_geocode_cache:
+        return _reverse_geocode_cache[cache_key]
 
     url = "https://api.heigit.org/pelias/v1/reverse"
 
@@ -77,10 +86,14 @@ def get_location_name(coordinates):
     else:
         short_name = "Unknown location"
 
-    return {
+    result = {
         "name": label or "Unknown location",
         "short_name": short_name,
     }
+
+    _reverse_geocode_cache[cache_key] = result
+
+    return result
 
 
 _geocode_cache = {}
