@@ -137,7 +137,7 @@ function TripForm({ onSubmit, loading }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-65"
+            className="w-full cursor-pointer rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-65"
           >
             {loading ? (
               <span className="inline-flex items-center gap-2">
