@@ -81,3 +81,37 @@ def get_location_name(coordinates):
         "name": label or "Unknown location",
         "short_name": short_name,
     }
+
+
+_geocode_cache = {}
+
+def geocode_place(text):
+    """Turn typed text like 'Dallas, TX' into {name, coordinates}."""
+    text = (text or "").strip()
+    if len(text) < 2:
+        raise ValueError("Please enter all three locations.")
+
+    key = text.lower()
+    if key in _geocode_cache:
+        return _geocode_cache[key]
+
+    response = requests.get(
+        "https://api.openrouteservice.org/geocode/search",
+        params={"text": text, "boundary.country": "USA", "size": 1},
+        headers={"Authorization": settings.OPENROUTESERVICE_API_KEY},
+        timeout=10,
+    )
+    if response.status_code != 200:
+        raise RuntimeError("Location search is unavailable right now. Please try again in a minute.")
+
+    features = response.json().get("features", [])
+    if not features:
+        raise ValueError(f"Could not find '{text}'. Try the format 'City, ST'.")
+
+    feature = features[0]
+    place = {
+        "name": feature["properties"].get("label") or text,
+        "coordinates": feature["geometry"]["coordinates"],
+    }
+    _geocode_cache[key] = place
+    return place

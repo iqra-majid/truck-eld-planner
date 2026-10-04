@@ -1,11 +1,19 @@
 import { useState } from "react";
-import LocationAutocomplete from "./LocationAutocomplete";
+
+const LOCATION_FIELDS = [
+  { name: "currentLocation", label: "Current Location", placeholder: "e.g. Dallas, TX" },
+  { name: "pickupLocation", label: "Pickup Location", placeholder: "e.g. Atlanta, GA" },
+  { name: "dropoffLocation", label: "Drop-off Location", placeholder: "e.g. New York, NY" },
+];
+
+const INPUT_CLASS =
+  "w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100";
 
 function TripForm({ onSubmit, loading }) {
   const [formData, setFormData] = useState({
-    currentLocation: null,
-    pickupLocation: null,
-    dropoffLocation: null,
+    currentLocation: "",
+    pickupLocation: "",
+    dropoffLocation: "",
     cycleHoursUsed: "0",
   });
 
@@ -13,13 +21,6 @@ function TripForm({ onSubmit, loading }) {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value,
-    }));
-  };
-
-  const handleLocationChange = (name, value) => {
     setValidationError("");
     setFormData((previousData) => ({
       ...previousData,
@@ -31,17 +32,27 @@ function TripForm({ onSubmit, loading }) {
     event.preventDefault();
     setValidationError("");
 
-    // Validate that all 3 locations were picked from autocomplete list (have valid coordinates array)
-    const hasCurrent = Array.isArray(formData.currentLocation?.coordinates) && formData.currentLocation.coordinates.length === 2;
-    const hasPickup = Array.isArray(formData.pickupLocation?.coordinates) && formData.pickupLocation.coordinates.length === 2;
-    const hasDropoff = Array.isArray(formData.dropoffLocation?.coordinates) && formData.dropoffLocation.coordinates.length === 2;
+    const cleaned = {
+      ...formData,
+      currentLocation: formData.currentLocation.trim(),
+      pickupLocation: formData.pickupLocation.trim(),
+      dropoffLocation: formData.dropoffLocation.trim(),
+    };
 
-    if (!hasCurrent || !hasPickup || !hasDropoff) {
-      setValidationError("Please select all three locations from the autocomplete dropdown list to get coordinates.");
+    // All three places must be typed
+    if (!cleaned.currentLocation || !cleaned.pickupLocation || !cleaned.dropoffLocation) {
+      setValidationError("Please type all three locations, for example: Dallas, TX");
       return;
     }
 
-    onSubmit(formData);
+    // Cycle hours: a number from 0 to 70
+    const cycle = Number(cleaned.cycleHoursUsed);
+    if (cleaned.cycleHoursUsed === "" || Number.isNaN(cycle) || cycle < 0 || cycle > 70) {
+      setValidationError("Cycle hours used must be a number between 0 and 70.");
+      return;
+    }
+
+    onSubmit(cleaned);
   };
 
   return (
@@ -59,35 +70,33 @@ function TripForm({ onSubmit, loading }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Current Location */}
-          <div>
-            <LocationAutocomplete
-              label="Current Location"
-              name="currentLocation"
-              value={formData.currentLocation}
-              onChange={handleLocationChange}
-            />
-          </div>
+          {/* Current, Pickup and Drop-off: typed by the driver */}
+          {LOCATION_FIELDS.map(({ name, label, placeholder }) => (
+            <div key={name}>
+              <label
+                htmlFor={name}
+                className="mb-2 block text-sm font-medium text-slate-700"
+              >
+                {label}
+              </label>
 
-          {/* Pickup */}
-          <div>
-            <LocationAutocomplete
-              label="Pickup Location"
-              name="pickupLocation"
-              value={formData.pickupLocation}
-              onChange={handleLocationChange}
-            />
-          </div>
+              <input
+                id={name}
+                name={name}
+                type="text"
+                value={formData[name]}
+                onChange={handleChange}
+                placeholder={placeholder}
+                autoComplete="off"
+                required
+                className={INPUT_CLASS}
+              />
+            </div>
+          ))}
 
-          {/* Drop-off */}
-          <div>
-            <LocationAutocomplete
-              label="Drop-off Location"
-              name="dropoffLocation"
-              value={formData.dropoffLocation}
-              onChange={handleLocationChange}
-            />
-          </div>
+          <p className="-mt-2 text-xs text-slate-400">
+            Type the city and state, like “Dallas, TX”.
+          </p>
 
           {/* Cycle Hours */}
           <div>
@@ -109,7 +118,7 @@ function TripForm({ onSubmit, loading }) {
               onChange={handleChange}
               placeholder="e.g. 15"
               required
-              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+              className={INPUT_CLASS}
             />
 
             <p className="mt-1.5 text-xs text-slate-400">

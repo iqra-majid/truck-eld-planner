@@ -216,39 +216,6 @@ def parse_route(
             }
         )
 
-    # TEMPORARY TEST
-    print("LEG 1:")
-    print("  From:", legs[0]["from"])
-    print("  To:", legs[0]["to"])
-    print(
-        "  Number of points:",
-        len(legs[0]["route_points"]),
-    )
-    print(
-        "  First point:",
-        legs[0]["route_points"][0],
-    )
-    print(
-        "  Last point:",
-        legs[0]["route_points"][-1],
-    )
-
-    print("LEG 2:")
-    print("  From:", legs[1]["from"])
-    print("  To:", legs[1]["to"])
-    print(
-        "  Number of points:",
-        len(legs[1]["route_points"]),
-    )
-    print(
-        "  First point:",
-        legs[1]["route_points"][0],
-    )
-    print(
-        "  Last point:",
-        legs[1]["route_points"][-1],
-    )
-
     instructions = []
 
     for segment in route["segments"]:
