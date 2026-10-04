@@ -127,7 +127,7 @@ function TripMap({ tripPlan }) {
     const bounds = L.latLngBounds();
 
     if (tripPlan) {
-      const { currentLocation, pickupLocation, dropoffLocation, schedule } = tripPlan;
+      const { currentLocation, pickupLocation, dropoffLocation, schedule, route } = tripPlan;
 
       // Add Start Marker (Truck Icon, Green)
       if (currentLocation?.coordinates) {
@@ -222,19 +222,29 @@ function TripMap({ tripPlan }) {
       }
 
       // Draw polyline connecting route points
-      const lineCoords = [];
-      if (currentLocation?.coordinates) lineCoords.push([currentLocation.coordinates[1], currentLocation.coordinates[0]]);
-      if (pickupLocation?.coordinates) lineCoords.push([pickupLocation.coordinates[1], pickupLocation.coordinates[0]]);
-      if (dropoffLocation?.coordinates) lineCoords.push([dropoffLocation.coordinates[1], dropoffLocation.coordinates[0]]);
+      // Draw the real truck route (road geometry from the backend)
+      const routeCoords = route?.geometry;
 
-      if (lineCoords.length >= 2) {
-        const polyline = L.polyline(lineCoords, {
-          color: "#ea580c", // Orange route line
+      if (Array.isArray(routeCoords) && routeCoords.length >= 2) {
+        const routeLine = L.polyline(routeCoords, {
+          color: "#ea580c",
           weight: 4,
-          opacity: 0.8,
-          dashArray: "6, 8",
+          opacity: 0.85,
         });
-        layerGroup.addLayer(polyline);
+        layerGroup.addLayer(routeLine);
+        bounds.extend(routeLine.getBounds());
+      } else {
+        // Fallback: straight dashed line if the route is missing
+        const lineCoords = [];
+        if (currentLocation?.coordinates) lineCoords.push([currentLocation.coordinates[1], currentLocation.coordinates[0]]);
+        if (pickupLocation?.coordinates) lineCoords.push([pickupLocation.coordinates[1], pickupLocation.coordinates[0]]);
+        if (dropoffLocation?.coordinates) lineCoords.push([dropoffLocation.coordinates[1], dropoffLocation.coordinates[0]]);
+
+        if (lineCoords.length >= 2) {
+          layerGroup.addLayer(
+            L.polyline(lineCoords, { color: "#ea580c", weight: 4, opacity: 0.8, dashArray: "6, 8" })
+          );
+        }
       }
 
       if (bounds.isValid()) {
